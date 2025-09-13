@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>HLS Proxy Player</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+  <style>
+    body{margin:0;background:#0f1724;color:#fff;font-family:sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+    .card{background:#1e293b;padding:20px;border-radius:12px;box-shadow:0 4px 14px rgba(0,0,0,0.5);max-width:800px;width:100%}
+    input{width:100%;padding:8px;margin:10px 0;border-radius:6px;border:1px solid #444;background:#0f1724;color:#fff}
+    button{padding:10px 16px;background:#06b6d4;border:none;border-radius:6px;color:#fff;cursor:pointer}
+    button:hover{background:#0891b2}
+    video{width:100%;height:auto;background:#000;border-radius:8px;margin-top:15px}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>HLS Player (with Proxy)</h2>
+    <label for="url">Stream URL:</label>
+    <input id="url" type="text" value="https://dai.google.com/ssai/event/noB3YwyRQVm5K-y_47MrBA/master.m3u8">
+    <button onclick="start()">Load Stream</button>
+    <video id="video" controls playsinline></video>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.4.2"></script>
+  <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
+  <script>
+    function start(){
+      const rawUrl = document.getElementById("url").value.trim();
+      const video = document.getElementById("video");
+      const proxyBase = window.location.origin;
+      const streamUrl = `${proxyBase}/proxy?url=${encodeURIComponent(rawUrl)}`;
+
+      if (Hls.isSupported()) {
+        const hls = new Hls();
+        hls.loadSource(streamUrl);
+        hls.attachMedia(video);
+        hls.on(Hls.Events.ERROR, function (event, data) {
+          if (data.fatal) {
+            alert("Fatal HLS error: " + data.type);
+          }
+        });
+      } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+        video.src = streamUrl;
+      }
+      new Plyr(video);
+    }
+  </script>
+</body>
+</html>
